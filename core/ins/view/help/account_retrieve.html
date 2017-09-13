@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="width=device-width,initial-scale=0.5,minimum-scale=0.5, maximum-scale=0.5,user-scalable=0" id="viewport" name="viewport" />
+    <title>{$l10n_msg.feedback.AccountAppeal}</title>
+    <link rel="stylesheet" href="http://static.8solo.com/ins/css/help.css?t={$smarty.now}">
+    <script src="http://static.8solo.com/ins/js/jquery.js"></script>
+    <script type="application/javascript">
+        $(window).on('resize', function (e) {
+            var wWidth = document.documentElement.clientWidth || document.body.clientWidth;
+            var size = wWidth / 6.4 ;
+            document.getElementsByTagName('html')[0].style.fontSize = size + 'px';
+        }).trigger('resize');
+    </script>
+</head>
+<body>
+<form method="post" onSubmit="return check_submit();" id="acc-back-from">
+    <header>
+        {if $info}
+        {if $info.status eq '1'}
+        <span style="color: coral">{$info.reply}</span>
+        <br/>
+        {else}
+        <span style="color: coral">{$l10n_msg.feedback.Reply1} {$info.add_time|date_format:'%Y-%m-%d %H:%M:%S'} {$l10n_msg.feedback.Reply2}</span>
+        <br/>
+        {/if}
+        {/if}
+        {$l10n_msg.feedback.Prompt}
+    </header>
+    <div class="input">
+        <label>{$l10n_msg.feedback.Email}:</label>
+        <input type="text" name="email" id="email" value="" placeholder="{$l10n_msg.feedback.Email}"/>
+    </div>
+    <!--<div class="input">-->
+        <!--<label>手机号:</label>-->
+        <!--<input type="number" name="mobile" id="mobile" maxlength="11" value="" placeholder="手机号码" onkeyup="value=value.replace(/[^\d]/g,'')"/>-->
+    <!--</div>-->
+    <!--<div class="input">-->
+        <!--<label>联络QQ:</label>-->
+        <!--<input type="number" name="qq" id="qq" maxlength="11" value="" placeholder="联络qq号" onkeyup="value=value.replace(/[^\d]/g,'')"/>-->
+    <!--</div>-->
+    <div class="input">
+        <label>{$l10n_msg.feedback.AccountID}:</label>
+        <input type="text" name="transfer_id" id="transfer_id" maxlength="15" value=""/>
+    </div>
+    <div class="input">
+        <label>{$l10n_msg.feedback.RegisterTime}:</label><input type="date" id="creation_time" name="creation_time" maxlength="300" value="" datatype=""/>
+    </div>
+    <div class="input">
+        <label>{$l10n_msg.feedback.LastLoginTime}:</label><input type="date" id="last_time" name="last_time" maxlength="300" value="" />
+    </div>
+    <div class="input">
+        <label>{$l10n_msg.feedback.UserInfo}:</label>
+        <input type="text" name="user_info" maxlength="50" value="" id="user_info" placeholder=""/>
+    </div>
+    <!--<p class="desc-s">-->
+        <!--{$l10n_msg.feedback.user_info_desc}-->
+    <!--</p>-->
+    <div class="input">
+        <label>{$l10n_msg.feedback.DeviceInfo}:</label>
+        <input type="text" name="device" maxlength="50" value="" id="device" placeholder="{$l10n_msg.feedback.DeviceDesc}"/>
+    </div>
+    <div class="input">
+        <label>{$l10n_msg.feedback.RechargeInfo}:</label>
+        <input type="text" name="pay_order" maxlength="50" value="" id="pay_order" placeholder="{$l10n_msg.feedback.RechargeDesc}"/>
+    </div>
+    <div class="input">
+        <label>{$l10n_msg.feedback.Other}:</label><input type="text" name="other" id="other" maxlength="400" value=""/>
+    </div>
+    <!--{if $appid eq 1000}-->
+    <!--<input type="button" class="submit up_btn" value="上传截图" onclick="javascript:do_upload()" id="font_up"/>-->
+    <!--<p id="ps" class="desc-s">图片仅支持:gif、jpeg、png格式</p>-->
+    <!--{/if}-->
+    <input id="submit" type="button" class="submit" value="{$l10n_msg.feedback.Submit}" onclick="javascript:on_submit()"/>
+    <input type="hidden" value="{$uuid}" name="uuid"/>
+    <input name="system" type="hidden" id="system" value="{$system}">
+</form>
+</body>
+<script type="text/javascript">
+    var submit_btn = $("#submit");
+    var is_submitting = false;
+    function check_submit() {
+        submit_btn.disable = true;
+        if(is_submitting){
+            return false;
+        }
+        var system = document.getElementById('system').value;
+        var mobile = $("input[name='mobile']");
+        var email = $("input[name='email']");
+        var qq = document.getElementById('qq');
+        var transfer_id = document.getElementById('transfer_id');
+        var creation_time = document.getElementById('creation_time');
+        var last_time = document.getElementById('last_time');
+        var user_info = document.getElementById('user_info');
+        var device = document.getElementById('device');
+        var pay_order = document.getElementById('pay_order');
+        var other = document.getElementById('other');
+//        if(mobile.val()=="" || mobile.val().length < 10 || mobile.val().length > 11){
+//            if(system == "50"){
+//                alert('手机号长度错误');
+//            }else {
+//                ios_native_alert('mobile');
+//            }
+//            $(mobile).focus();
+//            return false;
+//        }
+//        if(qq.value==""){
+//            if(system == "50"){
+//                alert('QQ号不能为空');
+//            }else {
+//                ios_native_alert('qq');
+//            }
+//            qq.focus();
+//            return false;
+//        }
+        if(email.val() == ''){
+            if(system == "50"){
+                alert('email不能为空')
+            }else{
+                ios_native_alert('email');
+            }
+            email.focus();
+            return false;
+        }
+        if(!checkEmail(email.val())){
+            if(system == "50"){
+                alert('email格式不正确');
+            }else{
+                ios_native_alert('email');
+            }
+            email.focus();
+            return false;
+        }
+        if(transfer_id.value==""){
+            tipControl(system, "{$l10n_msg.feedback.IDBlank}", transfer_id);
+            return false;
+        }
+        if(creation_time.value==""){
+            tipControl(system, "{$l10n_msg.feedback.SelectRegisterTime}", creation_time);
+            return false;
+        }
+        if(last_time.value==""){
+            tipControl(system, "{$l10n_msg.feedback.SelectLastTime}", last_time);
+            return false;
+        }
+        if(user_info.value==""){
+            tipControl(system, "{$l10n_msg.feedback.UserInfoBlank}", user_info);
+            return false;
+        }
+        if(device.value==""){
+            tipControl(system, "{$l10n_msg.feedback.DeviceBlank}", device);
+            return false;
+        }
+        if(pay_order.value==""){
+            tipControl(system, "{$l10n_msg.feedback.RechargeBlank}", pay_order);
+            return false;
+        }
+        var _$ = window.jQuery;
+        var formStr=_$("#acc-back-from").serialize();
+        if(system == "50"){
+            window.local_obj.account_submit(formStr);
+        }else {
+            account_submit(formStr);
+        }
+    }
+    function tipControl(system, tip, ele, noFocus) {
+        if(system == "50") {
+            alert(tip)
+        } else {
+            ios_native_alert(tip);
+        }
+        if(!noFocus) {
+            ele.focus();
+        }
+    }
+    function checkEmail(str){
+        var re = /^([\.a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+/;
+        return re.test(str)
+    }
+    function check_mobile(phone) {
+        var reg= /^13[0-9]{9}$|14[0-9]{9}|15[0-9]{9}$|18[0-9]{9}$|17[0-9]{9}$/;
+        return reg.test(phone)
+    }
+    function do_upload(){
+        var system = document.getElementById('system').value;
+//        if (document.getElementById("font_up").value!="预览截图") {
+//            document.getElementById("font_up").value="预览截图";
+//        }
+        if(system == "50"){
+            window.local_obj.uploadfile()
+        }else {
+            upload_img();
+        }
+    }
+    function upload_img() {
+    }
+    function ios_native_alert() {
+    }
+    function on_submit(){
+        document.forms[0].onsubmit();
+    }
+    function account_submit(data){
+    }
+</script>
+</html>
